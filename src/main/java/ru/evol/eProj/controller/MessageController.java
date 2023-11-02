@@ -36,14 +36,12 @@ public class MessageController {
 
         if (existingMessage.isPresent()) {
             Message updatedMessage = existingMessage.get();
-            updatedMessage.setId(message.getId());
             updatedMessage.setTitle(message.getTitle());
             updatedMessage.setText(message.getText());
             updatedMessage.setTime(LocalDateTime.now());
             return new ResponseEntity<>(updatedMessage, HttpStatus.OK);
         } else {
-            messages.add(message);
-            return new ResponseEntity<>(message, HttpStatus.CREATED);
+            return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
         }
     }
 

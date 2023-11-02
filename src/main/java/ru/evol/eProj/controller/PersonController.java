@@ -1,9 +1,11 @@
 package ru.evol.eProj.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.evol.eProj.model.Person;
+import ru.evol.eProj.repository.PersonRepository;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -15,46 +17,44 @@ import java.util.Optional;
 //@RequestMapping("/person")
 public class PersonController {
 
-    private List<Person> persons = new ArrayList<>(Arrays.asList(
-            new Person(1, "Ivan", "Ivanovich", "Ivanov", LocalDate.of(1999, 2,3)),
-            new Person(2, "Петр", "Петрович", "Петров", LocalDate.of(2002, 2,2)),
-            new Person(3, "Евгений", "Васильевич", "Васин", LocalDate.of(2005, 4,8)),
-            new Person(4, "Максим", "Яковлевич", "Окопский", LocalDate.of(1978, 6,5))
-    ));
+    @Autowired
+    private PersonRepository repository;
 
     @PostMapping("/persons")
     public Person addPerson(@RequestBody Person person) {
-        persons.add(person);
+        repository.save(person);
         return person;
     }
 
     @PutMapping("/persons/{id}")
-    public ResponseEntity<Person> updatePerson(@PathVariable int id, @RequestBody Person person) {
-        int index = - 1;
-        for (Person p : persons) {
-            if (p.getId() == id) {
-                index = persons.indexOf(p);
-                persons.set(index, person);
-            }
+    public ResponseEntity<Person> updatePerson(@PathVariable int id, @RequestBody Person updatedPerson) {
+        Optional<Person> existingPerson = repository.findById(id);
+
+        if (existingPerson.isPresent()) {
+            Person person = existingPerson.get();
+            person.setFirstname(updatedPerson.getFirstname());
+            person.setSurname(updatedPerson.getSurname());
+            person.setLastname(updatedPerson.getLastname());
+            person.setBirthday(updatedPerson.getBirthday());
+            return new ResponseEntity<>(repository.save(person), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        return index == -1
-                ? new ResponseEntity<>(addPerson(person), HttpStatus.CREATED)
-                : new ResponseEntity<>(person, HttpStatus.OK);
     }
 
     @DeleteMapping("/persons/{id}")
     public void deletePerson(@PathVariable int id) {
-        persons.removeIf(p -> p.getId() == id);
+        repository.deleteById(id);
     }
 
     @GetMapping("/persons")
     public Iterable<Person> getPersons() {
-        return persons;
+        return repository.findAll();
     }
 
     @GetMapping("/persons/{id}")
     public Optional<Person> findPersonById(@PathVariable int id) {
-        return persons.stream().filter(p -> p.getId() == id).findFirst();
+        return repository.findById(id);
     }
 
     @GetMapping
