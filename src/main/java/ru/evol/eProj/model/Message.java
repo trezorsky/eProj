@@ -1,24 +1,39 @@
 package ru.evol.eProj.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 
 import java.time.LocalDateTime;
 
+@Entity
 public class Message {
+    @Id @GeneratedValue
     private int id;
     private String title;
     private String text;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime time;
+    @ManyToOne
+    @JsonIgnore
+    private Person person;
 
     public Message() {
     }
 
-    public Message(int id, String title, String text, LocalDateTime time) {
-        this.id = id;
+    public Message(String title, String text, LocalDateTime time, Person person) {
         this.title = title;
         this.text = text;
         this.time = time;
+        this.person = person;
+    }
+
+    public Message(String title, String text) {
+        this.title = title;
+        this.text = text;
     }
 
     public int getId() {
@@ -51,5 +66,13 @@ public class Message {
 
     public void setTime(LocalDateTime time) {
         this.time = time;
+    }
+
+    public Person getPerson() {
+        return person;
+    }
+
+    public void setPerson(Person person) {
+        this.person = person;
     }
 }

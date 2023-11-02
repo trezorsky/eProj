@@ -1,62 +1,49 @@
 package ru.evol.eProj.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.evol.eProj.model.Message;
+import ru.evol.eProj.repository.MessageRepository;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 @RestController
-// путь для запросов к сообщениям
-@RequestMapping("/messages")
 public class MessageController {
 
-    private List<Message> messages = new ArrayList<>(Arrays.asList(
-            new Message(1, "Заголовок 1", "Текст 1", LocalDateTime.now()),
-            new Message(2, "Заголовок 2", "Текст 2", LocalDateTime.now()),
-            new Message(3, "Заголовок 3", "Текст 3", LocalDateTime.now())
-    ));
+    @Autowired
+    private MessageRepository repositoryMessages;
 
-    @PostMapping("/create")
-    public Message createMessage(@RequestBody Message message) {
-        messages.add(message);
+    @GetMapping("/messages")
+    public Iterable<Message> getMessages() {
+        return repositoryMessages.findAll();
+    }
+
+    @GetMapping("/messages/{id}")
+    public Optional<Message> findMessageById(@PathVariable int id) {
+        return repositoryMessages.findById(id);
+    }
+
+    @PostMapping("/messages")
+    public Message addMessage(@RequestBody Message message) {
+        repositoryMessages.save(message);
         return message;
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/messages/{id}")
     public ResponseEntity<Message> updateMessage(@PathVariable int id, @RequestBody Message message) {
-        Optional<Message> existingMessage = messages.stream()
-                .filter(m -> m.getId() == id)
-                 .findFirst();
-
-        if (existingMessage.isPresent()) {
-            Message updatedMessage = existingMessage.get();
-            updatedMessage.setTitle(message.getTitle());
-            updatedMessage.setText(message.getText());
-            updatedMessage.setTime(LocalDateTime.now());
-            return new ResponseEntity<>(updatedMessage, HttpStatus.OK);
+        if (repositoryMessages.existsById(id)) {
+            message.setId(id);
+            return new ResponseEntity(repositoryMessages.save(message), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
         }
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/messages/{id}")
     public void deleteMessage(@PathVariable int id) {
-        messages.removeIf(m -> m.getId() == id);
-    }
-
-    @GetMapping("/list")
-    public Iterable<Message> getAllMessages() {
-        return messages;
-    }
-
-    @GetMapping("/{id}")
-    public Optional<Message> getMessageById(@PathVariable int id) {
-        return messages.stream().filter(m -> m.getId() == id).findFirst();
+        repositoryMessages.deleteById(id);
     }
 }

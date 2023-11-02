@@ -4,48 +4,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.evol.eProj.PersonService;
+import ru.evol.eProj.model.Message;
 import ru.evol.eProj.model.Person;
 import ru.evol.eProj.repository.PersonRepository;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
-//@RequestMapping("/person")
 public class PersonController {
-
     @Autowired
     private PersonRepository repository;
-
-    @PostMapping("/persons")
-    public Person addPerson(@RequestBody Person person) {
-        repository.save(person);
-        return person;
-    }
-
-    @PutMapping("/persons/{id}")
-    public ResponseEntity<Person> updatePerson(@PathVariable int id, @RequestBody Person updatedPerson) {
-        Optional<Person> existingPerson = repository.findById(id);
-
-        if (existingPerson.isPresent()) {
-            Person person = existingPerson.get();
-            person.setFirstname(updatedPerson.getFirstname());
-            person.setSurname(updatedPerson.getSurname());
-            person.setLastname(updatedPerson.getLastname());
-            person.setBirthday(updatedPerson.getBirthday());
-            return new ResponseEntity<>(repository.save(person), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
-
-    @DeleteMapping("/persons/{id}")
-    public void deletePerson(@PathVariable int id) {
-        repository.deleteById(id);
-    }
+    @Autowired
+    private PersonService service;
 
     @GetMapping("/persons")
     public Iterable<Person> getPersons() {
@@ -56,6 +28,104 @@ public class PersonController {
     public Optional<Person> findPersonById(@PathVariable int id) {
         return repository.findById(id);
     }
+
+    @GetMapping("/persons/{id}/messages")
+    public ResponseEntity<List<Message>> getAllMessagesOfPerson(@PathVariable int id) {
+        if (repository.existsById(id)) {
+            return new ResponseEntity(service.getAllMessagesOfPerson(id), HttpStatus.OK);
+        } else {
+            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PostMapping("/persons")
+    public Person addPerson(@RequestBody Person person) {
+        repository.save(person);
+        return person;
+    }
+
+    @PostMapping("/persons/{id}/messages")
+    public ResponseEntity<Person> addMessage(@PathVariable int id, @RequestBody Message message) {
+        if (repository.existsById(id)) {
+            return new ResponseEntity(service.addMessageToPerson(id, message), HttpStatus.OK);
+        } else {
+            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/persons/{id}")
+    public ResponseEntity<Person> updatePerson(@PathVariable int id, @RequestBody Person person) {
+        if (repository.existsById(id)) {
+            person.setId(id);
+            return new ResponseEntity(repository.save(person), HttpStatus.OK);
+        } else {
+            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @DeleteMapping("/persons/{id}")
+    public void deletePerson(@PathVariable int id) {
+        repository.deleteById(id);
+    }
+
+    @DeleteMapping("/persons/{id}/messages/{messageId}")
+    public ResponseEntity<Person> deletePersonMessage(@PathVariable int id, @PathVariable int messageId) {
+        if (repository.existsById(id)) {
+            return new ResponseEntity(service.deleteMessageFromPerson(id, messageId), HttpStatus.OK);
+        } else {
+            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+//    @PostMapping("/persons")
+//    public Person addPerson(@RequestBody Person person) {
+//        repositoryPersons.save(person);
+//        return person;
+//    }
+//
+//    @PostMapping("/persons")
+//    public Person addPerson(@RequestBody Person person) {
+//        repository.save(person);
+//        return person;
+//    }
+//
+//    @PostMapping("/persons/{id}/messages")
+//    public Person addMessage(@PathVariable int id, @RequestBody Message message) {
+//        Person person = repository.findById(id).get();
+//        person.addMessage(message);
+//        return repository.save(person);
+//    }
+//
+//    @PutMapping("/persons/{id}")
+//    public ResponseEntity<Person> updatePerson(@PathVariable int id, @RequestBody Person updatedPerson) {
+//        Optional<Person> existingPerson = repository.findById(id);
+//
+//        if (existingPerson.isPresent()) {
+//            Person person = existingPerson.get();
+//            person.setFirstname(updatedPerson.getFirstname());
+//            person.setSurname(updatedPerson.getSurname());
+//            person.setLastname(updatedPerson.getLastname());
+//            person.setBirthday(updatedPerson.getBirthday());
+//            return new ResponseEntity<>(repository.save(person), HttpStatus.OK);
+//        } else {
+//            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+//        }
+//    }
+//
+//    @DeleteMapping("/persons/{id}")
+//    public void deletePerson(@PathVariable int id) {
+//        repository.deleteById(id);
+//    }
+//
+//    @GetMapping("/persons")
+//    public Iterable<Person> getPersons() {
+//        return repository.findAll();
+//    }
+//
+//    @GetMapping("/persons/{id}")
+//    public Optional<Person> findPersonById(@PathVariable int id) {
+//        return repository.findById(id);
+//    }
 
     @GetMapping
     public String hello() {

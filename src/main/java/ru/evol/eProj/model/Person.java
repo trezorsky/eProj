@@ -1,37 +1,31 @@
 package ru.evol.eProj.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 public class Person {
-    @Id
-    @GeneratedValue
+    @Id @GeneratedValue
     private int id;
     private String firstname;
     private String surname;
     private String lastname;
     private LocalDate birthday;
+    @OneToMany(cascade = CascadeType.ALL)
+    List<Message> messages;
 
     public Person() {
     }
 
-    public Person(String firstname, String surname, String lastname, LocalDate birthday) {
-        this.firstname = firstname;
-        this.surname = surname;
-        this.lastname = lastname;
-        this.birthday = birthday;
-    }
-
-    public Person(int id, String firstname, String surname, String lastname, LocalDate birthday) {
+    public Person(int id, String firstname, String surname, String lastname, LocalDate birthday, List<Message> messages) {
         this.id = id;
         this.firstname = firstname;
         this.surname = surname;
         this.lastname = lastname;
         this.birthday = birthday;
+        this.messages = messages;
     }
 
     public int getId() {
@@ -72,6 +66,14 @@ public class Person {
 
     public void setBirthday(LocalDate birthday) {
         this.birthday = birthday;
+    }
+
+    public void addMessage(Message message) {
+        messages.add(message);
+    }
+
+    public List<Message> getMessages() {
+        return messages;
     }
 }
 
