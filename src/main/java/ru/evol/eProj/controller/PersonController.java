@@ -4,20 +4,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.evol.eProj.PersonService;
-import ru.evol.eProj.model.Message;
+import org.springframework.web.client.RestTemplate;
 import ru.evol.eProj.model.Person;
 import ru.evol.eProj.repository.PersonRepository;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController
 public class PersonController {
     @Autowired
     private PersonRepository repository;
+
     @Autowired
-    private PersonService service;
+    private RestTemplate restTemplate;
 
     @GetMapping("/persons")
     public Iterable<Person> getPersons() {
@@ -29,28 +28,10 @@ public class PersonController {
         return repository.findById(id);
     }
 
-    @GetMapping("/persons/{id}/messages")
-    public ResponseEntity<List<Message>> getAllMessagesOfPerson(@PathVariable int id) {
-        if (repository.existsById(id)) {
-            return new ResponseEntity(service.getAllMessagesOfPerson(id), HttpStatus.OK);
-        } else {
-            return new ResponseEntity(HttpStatus.BAD_REQUEST);
-        }
-    }
-
     @PostMapping("/persons")
     public Person addPerson(@RequestBody Person person) {
         repository.save(person);
         return person;
-    }
-
-    @PostMapping("/persons/{id}/messages")
-    public ResponseEntity<Person> addMessage(@PathVariable int id, @RequestBody Message message) {
-        if (repository.existsById(id)) {
-            return new ResponseEntity(service.addMessageToPerson(id, message), HttpStatus.OK);
-        } else {
-            return new ResponseEntity(HttpStatus.BAD_REQUEST);
-        }
     }
 
     @PutMapping("/persons/{id}")
@@ -66,15 +47,6 @@ public class PersonController {
     @DeleteMapping("/persons/{id}")
     public void deletePerson(@PathVariable int id) {
         repository.deleteById(id);
-    }
-
-    @DeleteMapping("/persons/{id}/messages/{messageId}")
-    public ResponseEntity<Person> deletePersonMessage(@PathVariable int id, @PathVariable int messageId) {
-        if (repository.existsById(id)) {
-            return new ResponseEntity(service.deleteMessageFromPerson(id, messageId), HttpStatus.OK);
-        } else {
-            return new ResponseEntity(HttpStatus.BAD_REQUEST);
-        }
     }
 
     @GetMapping

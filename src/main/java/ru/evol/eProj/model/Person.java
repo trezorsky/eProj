@@ -13,19 +13,16 @@ public class Person {
     private String surname;
     private String lastname;
     private LocalDate birthday;
-    @OneToMany(cascade = CascadeType.ALL)
-    List<Message> messages;
 
     public Person() {
     }
 
-    public Person(int id, String firstname, String surname, String lastname, LocalDate birthday, List<Message> messages) {
+    public Person(int id, String firstname, String surname, String lastname, LocalDate birthday) {
         this.id = id;
         this.firstname = firstname;
         this.surname = surname;
         this.lastname = lastname;
         this.birthday = birthday;
-        this.messages = messages;
     }
 
     public int getId() {
@@ -68,13 +65,6 @@ public class Person {
         this.birthday = birthday;
     }
 
-    public void addMessage(Message message) {
-        messages.add(message);
-    }
-
-    public List<Message> getMessages() {
-        return messages;
-    }
 }
 
 
